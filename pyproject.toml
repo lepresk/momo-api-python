@@ -1,5 +1,5 @@
 [project]
-name = "momo-api"
+name = "mtn-momo-client"
 version = "1.0.0"
 description = "MTN Mobile Money API client for Python — collections, disbursements and remittances"
 authors = [{name = "lepresk", email = "lepresk@gmail.com"}]
@@ -13,6 +13,9 @@ dev = ["pytest", "pytest-httpx"]
 [project.urls]
 Homepage = "https://lepresk.com/blog"
 Repository = "https://github.com/lepresk/momo-api-python"
+
+[tool.hatch.build.targets.wheel]
+packages = ["momo_api"]
 
 [build-system]
 requires = ["hatchling"]

@@ -1,4 +1,8 @@
-# momo-api-python
+# mtn-momo-client
+
+[![PyPI](https://img.shields.io/pypi/v/mtn-momo-client)](https://pypi.org/project/mtn-momo-client/)
+[![CI](https://github.com/lepresk/momo-api-python/actions/workflows/ci.yml/badge.svg)](https://github.com/lepresk/momo-api-python/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A Python client for the MTN Mobile Money (MoMo) API, supporting collections, disbursements and remittances. This is a port of the PHP package [lepresk/momo-api](https://github.com/lepresk/momo-api).
 
