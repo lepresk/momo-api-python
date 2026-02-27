@@ -1,0 +1,13 @@
+{
+  "amount": "200",
+  "currency": "EUR",
+  "financialTransactionId": "111222333",
+  "externalId": "deposit-001",
+  "payer": {
+    "partyIdType": "MSISDN",
+    "partyId": "46733123450"
+  },
+  "payerMessage": "Deposit",
+  "payeeNote": "Deposit note",
+  "status": "SUCCESSFUL"
+}

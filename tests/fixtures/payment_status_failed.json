@@ -1,0 +1,16 @@
+{
+  "amount": "100",
+  "currency": "EUR",
+  "externalId": "order-123",
+  "payer": {
+    "partyIdType": "MSISDN",
+    "partyId": "46733123450"
+  },
+  "payerMessage": "Payment for order 123",
+  "payeeNote": "Thank you",
+  "status": "FAILED",
+  "reason": {
+    "code": "PAYER_NOT_FOUND",
+    "message": "Payer not found"
+  }
+}

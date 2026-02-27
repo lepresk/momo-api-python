@@ -1,0 +1,13 @@
+{
+  "amount": "150",
+  "currency": "EUR",
+  "financialTransactionId": "444555666",
+  "externalId": "transfer-001",
+  "payee": {
+    "partyIdType": "MSISDN",
+    "partyId": "46733123450"
+  },
+  "payerMessage": "Monthly salary",
+  "payeeNote": "Salary payment",
+  "status": "SUCCESSFUL"
+}

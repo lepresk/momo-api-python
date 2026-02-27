@@ -1,0 +1,5 @@
+{
+  "providerCallbackHost": "https://callback.example.com",
+  "apiKey": null,
+  "targetEnvironment": "sandbox"
+}

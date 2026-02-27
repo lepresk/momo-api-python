@@ -1,0 +1,9 @@
+{
+  "amount": "50",
+  "currency": "EUR",
+  "financialTransactionId": "777888999",
+  "externalId": "refund-001",
+  "payerMessage": "Refund",
+  "payeeNote": "Refund note",
+  "status": "SUCCESSFUL"
+}
