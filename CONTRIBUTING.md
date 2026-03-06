@@ -12,7 +12,7 @@ Contributions are welcome. This document covers the basics to get started.
 ```bash
 git clone https://github.com/lepresk/momo-api-python.git
 cd momo-api-python
-pip install ".[dev]"
+pip install "mtn-momo-client[dev]"
 ```
 
 ## Running tests
@@ -45,6 +45,6 @@ test: add disbursement refund status test
 ## Reporting issues
 
 Open an issue on [GitHub](https://github.com/lepresk/momo-api-python/issues) with:
-- the version you are using
+- the version you are using (`pip show mtn-momo-client`)
 - a minimal reproduction
 - the expected vs actual behavior
