@@ -10,6 +10,7 @@ from ..models.api_token import ApiToken
 from ..models.config import Config
 from ..models.payment_request import PaymentRequest
 from ..models.transaction import Transaction
+from ..support.token_cache import TokenCache
 
 
 class CollectionApi:
@@ -21,6 +22,7 @@ class CollectionApi:
         self._config = config
         self._base_url = base_url.rstrip("/")
         self._environment = environment
+        self._token_cache = TokenCache()
 
     # ------------------------------------------------------------------
     # Internal helpers
@@ -60,6 +62,10 @@ class CollectionApi:
 
     def get_access_token(self) -> ApiToken:
         """Obtain an OAuth2 access token for the Collection product."""
+        cached = self._token_cache.get()
+        if cached is not None:
+            return ApiToken(access_token=cached, token_type="Bearer", expires_in=0)
+
         url = self._url("token/")
         headers = {
             **self._subscription_headers(),
@@ -68,7 +74,23 @@ class CollectionApi:
         with httpx.Client() as client:
             response = client.post(url, headers=headers)
         self._raise_for_status(response)
-        return ApiToken.from_dict(response.json())
+        token = ApiToken.from_dict(response.json())
+        self._token_cache.set(token.access_token, token.expires_in)
+        return token
+
+    def check_account_holder(self, phone: str) -> bool:
+        """Check whether an MSISDN account holder is active."""
+        token = self.get_access_token()
+        url = self._url(f"v1_0/accountholder/msisdn/{phone}/active")
+        headers = {
+            "Ocp-Apim-Subscription-Key": self._config.subscription_key,
+            "X-Target-Environment": self._environment,
+            "Authorization": f"Bearer {token.access_token}",
+        }
+        with httpx.Client() as client:
+            response = client.get(url, headers=headers)
+        self._raise_for_status(response)
+        return bool(response.json().get("result", False))
 
     def request_to_pay(self, request: PaymentRequest) -> str:
         """Initiate a payment request. Returns the reference ID."""

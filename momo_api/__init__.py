@@ -13,6 +13,13 @@ from .exceptions import (
     InternalServerErrorException,
     InvalidSubscriptionKeyException,
 )
+from .airtel import (
+    AirtelApi,
+    AirtelConfig,
+    AirtelCollectionApi,
+    AirtelDisbursementApi,
+    AirtelTransaction,
+)
 
 __all__ = [
     "MomoApi",
@@ -28,4 +35,9 @@ __all__ = [
     "ConflictException",
     "InternalServerErrorException",
     "InvalidSubscriptionKeyException",
+    "AirtelApi",
+    "AirtelConfig",
+    "AirtelCollectionApi",
+    "AirtelDisbursementApi",
+    "AirtelTransaction",
 ]

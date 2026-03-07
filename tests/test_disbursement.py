@@ -136,3 +136,16 @@ def test_get_deposit_status_not_found(disbursement_api, token_response, httpx_mo
     )
     with pytest.raises(ResourceNotFoundException):
         disbursement_api.get_deposit_status("unknown")
+
+
+def test_check_account_holder_active(disbursement_api, token_response, httpx_mock: HTTPXMock):
+    phone = "242068511358"
+    httpx_mock.add_response(method="POST", url=f"{SANDBOX_BASE}/disbursement/token/", json=token_response)
+    httpx_mock.add_response(
+        method="GET",
+        url=f"{SANDBOX_BASE}/disbursement/v1_0/accountholder/msisdn/{phone}/active",
+        json={"result": True},
+        status_code=200,
+    )
+    result = disbursement_api.check_account_holder(phone)
+    assert result is True

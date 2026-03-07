@@ -141,3 +141,29 @@ def test_get_payment_status_not_found(collection_api, token_response, httpx_mock
     )
     with pytest.raises(ResourceNotFoundException):
         collection_api.get_payment_status("unknown-id")
+
+
+def test_check_account_holder_active(collection_api, token_response, httpx_mock: HTTPXMock):
+    phone = "46733123454"
+    httpx_mock.add_response(method="POST", url=f"{SANDBOX_BASE}/collection/token/", json=token_response)
+    httpx_mock.add_response(
+        method="GET",
+        url=f"{SANDBOX_BASE}/collection/v1_0/accountholder/msisdn/{phone}/active",
+        json={"result": True},
+        status_code=200,
+    )
+    result = collection_api.check_account_holder(phone)
+    assert result is True
+
+
+def test_check_account_holder_inactive(collection_api, token_response, httpx_mock: HTTPXMock):
+    phone = "46733123454"
+    httpx_mock.add_response(method="POST", url=f"{SANDBOX_BASE}/collection/token/", json=token_response)
+    httpx_mock.add_response(
+        method="GET",
+        url=f"{SANDBOX_BASE}/collection/v1_0/accountholder/msisdn/{phone}/active",
+        json={"result": False},
+        status_code=200,
+    )
+    result = collection_api.check_account_holder(phone)
+    assert result is False
