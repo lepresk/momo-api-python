@@ -1,8 +1,12 @@
 from dataclasses import dataclass
+from typing import Any, Dict
+
+from .abstract_request import AbstractRequest, msisdn
+from .currency import DEFAULT_CURRENCY
 
 
 @dataclass
-class TransferRequest:
+class TransferRequest(AbstractRequest):
     amount: str
     currency: str
     external_id: str
@@ -16,28 +20,11 @@ class TransferRequest:
         amount: str,
         payee: str,
         external_id: str,
-        currency: str = "XAF",
+        currency: str = DEFAULT_CURRENCY,
         payer_message: str = "",
         payee_note: str = "",
     ) -> "TransferRequest":
-        return cls(
-            amount=amount,
-            currency=currency,
-            external_id=external_id,
-            payee=payee,
-            payer_message=payer_message,
-            payee_note=payee_note,
-        )
+        return cls(amount, currency, external_id, payee, payer_message, payee_note)
 
-    def to_dict(self) -> dict:
-        return {
-            "amount": self.amount,
-            "currency": self.currency,
-            "externalId": self.external_id,
-            "payee": {
-                "partyIdType": "MSISDN",
-                "partyId": self.payee,
-            },
-            "payerMessage": self.payer_message,
-            "payeeNote": self.payee_note,
-        }
+    def _subject(self) -> Dict[str, Any]:
+        return {"payee": msisdn(self.payee)}

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any, Dict
 
 
 @dataclass
@@ -7,7 +8,7 @@ class AccountBalance:
     currency: str
 
     @classmethod
-    def parse(cls, data: dict) -> "AccountBalance":
+    def parse(cls, data: Dict[str, Any]) -> "AccountBalance":
         return cls(
             available_balance=data.get("availableBalance", ""),
             currency=data.get("currency", ""),

@@ -1,40 +1,49 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Dict, Optional
+
+from ..support.json import optional_string
 
 
 @dataclass
 class AirtelTransaction:
-    """Represents an Airtel Money transaction.
+    """An Airtel Money transaction.
 
     Status codes:
-    - TS  = Transaction Successful
-    - TF  = Transaction Failed
-    - TIP = Transaction In Progress (pending)
+
+    - ``TS``: transaction successful
+    - ``TF``: transaction failed
+    - ``TIP``: transaction in progress
+    - ``TI``: transaction initiated (also pending)
     """
 
     STATUS_SUCCESSFUL = "TS"
     STATUS_FAILED = "TF"
     STATUS_PENDING = "TIP"
+    STATUS_IN_PROGRESS = "TI"
 
     id: str
     status: str
+    #: Airtel's own reference for the transaction, when it returns one
+    reference_id: Optional[str] = None
     airtel_money_id: Optional[str] = None
     message: Optional[str] = None
 
     @classmethod
-    def parse(cls, data: dict) -> "AirtelTransaction":
+    def parse(cls, data: Dict[str, Any]) -> "AirtelTransaction":
         return cls(
-            id=str(data.get("id", "")),
-            status=str(data.get("status", "")),
-            airtel_money_id=data.get("airtel_money_id"),
-            message=data.get("message"),
+            id=optional_string(data, "id") or "",
+            status=optional_string(data, "status") or "",
+            reference_id=optional_string(data, "reference_id"),
+            airtel_money_id=optional_string(data, "airtel_money_id"),
+            message=optional_string(data, "message"),
         )
 
     def is_successful(self) -> bool:
         return self.status == self.STATUS_SUCCESSFUL
 
     def is_pending(self) -> bool:
-        return self.status == self.STATUS_PENDING
+        """Airtel uses two codes for "not settled yet"."""
+        return self.status in (self.STATUS_PENDING, self.STATUS_IN_PROGRESS)
 
     def is_failed(self) -> bool:
         return self.status == self.STATUS_FAILED

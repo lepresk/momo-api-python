@@ -53,7 +53,7 @@ def test_get_payment_status_successful(collection_api, token_response, httpx_moc
     transaction = collection_api.get_payment_status("some-uuid")
     assert transaction.is_successful()
     assert transaction.amount == "100"
-    assert transaction.payer["partyId"] == "46733123450"
+    assert transaction.payer == "46733123450"
 
 
 def test_get_payment_status_pending(collection_api, token_response, httpx_mock: HTTPXMock):

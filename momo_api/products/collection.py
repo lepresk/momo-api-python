@@ -1,144 +1,35 @@
-import base64
-import uuid
 from typing import Optional
 
-import httpx
-
-from ..exceptions import create_exception
-from ..models.account_balance import AccountBalance
-from ..models.api_token import ApiToken
-from ..models.config import Config
+from ..models.currency import DEFAULT_CURRENCY
 from ..models.payment_request import PaymentRequest
 from ..models.transaction import Transaction
-from ..support.token_cache import TokenCache
+from .base import AbstractApiProduct
 
 
-class CollectionApi:
-    """MTN MoMo Collection API product."""
+class CollectionApi(AbstractApiProduct):
+    """MTN MoMo Collection API: receive payments."""
 
     PRODUCT_PATH = "collection"
 
-    def __init__(self, config: Config, base_url: str, environment: str):
-        self._config = config
-        self._base_url = base_url.rstrip("/")
-        self._environment = environment
-        self._token_cache = TokenCache()
+    def request_to_pay(self, request: PaymentRequest, reference_id: Optional[str] = None) -> str:
+        """Request a payment from a consumer. The payer authorizes it out of band,
+        so this returns a reference id to poll with ``get_payment_status()``.
 
-    # ------------------------------------------------------------------
-    # Internal helpers
-    # ------------------------------------------------------------------
-
-    def _basic_auth_header(self) -> str:
-        credentials = f"{self._config.api_user}:{self._config.api_key}"
-        encoded = base64.b64encode(credentials.encode()).decode()
-        return f"Basic {encoded}"
-
-    def _subscription_headers(self) -> dict:
-        return {"Ocp-Apim-Subscription-Key": self._config.subscription_key}
-
-    def _auth_headers(self, token: str) -> dict:
-        return {
-            "Ocp-Apim-Subscription-Key": self._config.subscription_key,
-            "X-Target-Environment": self._environment,
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json",
-        }
-
-    def _raise_for_status(self, response: httpx.Response) -> None:
-        if response.status_code >= 400:
-            try:
-                body = response.json()
-                message = body.get("message") or body.get("error") or str(body)
-            except Exception:
-                message = response.text
-            raise create_exception(response.status_code, message)
-
-    def _url(self, path: str) -> str:
-        return f"{self._base_url}/{self.PRODUCT_PATH}/{path}"
-
-    # ------------------------------------------------------------------
-    # Public API
-    # ------------------------------------------------------------------
-
-    def get_access_token(self) -> ApiToken:
-        """Obtain an OAuth2 access token for the Collection product."""
-        cached = self._token_cache.get()
-        if cached is not None:
-            return ApiToken(access_token=cached, token_type="Bearer", expires_in=0)
-
-        url = self._url("token/")
-        headers = {
-            **self._subscription_headers(),
-            "Authorization": self._basic_auth_header(),
-        }
-        with httpx.Client() as client:
-            response = client.post(url, headers=headers)
-        self._raise_for_status(response)
-        token = ApiToken.from_dict(response.json())
-        self._token_cache.set(token.access_token, token.expires_in)
-        return token
-
-    def check_account_holder(self, phone: str) -> bool:
-        """Check whether an MSISDN account holder is active."""
-        token = self.get_access_token()
-        url = self._url(f"v1_0/accountholder/msisdn/{phone}/active")
-        headers = {
-            "Ocp-Apim-Subscription-Key": self._config.subscription_key,
-            "X-Target-Environment": self._environment,
-            "Authorization": f"Bearer {token.access_token}",
-        }
-        with httpx.Client() as client:
-            response = client.get(url, headers=headers)
-        self._raise_for_status(response)
-        return bool(response.json().get("result", False))
-
-    def request_to_pay(self, request: PaymentRequest) -> str:
-        """Initiate a payment request. Returns the reference ID."""
-        token = self.get_access_token()
-        reference_id = str(uuid.uuid4())
-        url = self._url("v1_0/requesttopay")
-        headers = {
-            **self._auth_headers(token.access_token),
-            "X-Reference-Id": reference_id,
-        }
-        if self._config.callback_uri:
-            headers["X-Callback-Url"] = self._config.callback_uri
-
-        with httpx.Client() as client:
-            response = client.post(url, json=request.to_dict(), headers=headers)
-        self._raise_for_status(response)
-        return reference_id
+        :param reference_id: UUID to use as the reference id instead of a random
+            one, so the payment can be queried even if the response never arrives
+        """
+        return self._submit("v1_0/requesttopay", request.to_dict(), reference_id)
 
     def get_payment_status(self, payment_id: str) -> Transaction:
-        """Get the status of a previously initiated payment request."""
-        token = self.get_access_token()
-        url = self._url(f"v1_0/requesttopay/{payment_id}")
-        with httpx.Client() as client:
-            response = client.get(url, headers=self._auth_headers(token.access_token))
-        self._raise_for_status(response)
-        return Transaction.parse(response.json())
-
-    def get_balance(self) -> AccountBalance:
-        """Get the account balance for the Collection product."""
-        token = self.get_access_token()
-        url = self._url("v1_0/account/balance")
-        with httpx.Client() as client:
-            response = client.get(url, headers=self._auth_headers(token.access_token))
-        self._raise_for_status(response)
-        return AccountBalance.parse(response.json())
+        return self._get_transaction(f"v1_0/requesttopay/{payment_id}")
 
     def quick_pay(
         self,
         amount: str,
         phone: str,
         reference: str,
-        currency: str = "XAF",
+        currency: str = DEFAULT_CURRENCY,
+        reference_id: Optional[str] = None,
     ) -> str:
-        """Convenience method that builds and submits a payment request."""
-        payment = PaymentRequest.make(
-            amount=amount,
-            payer=phone,
-            external_id=reference,
-            currency=currency,
-        )
-        return self.request_to_pay(payment)
+        """Shorthand for a payment with no message or note."""
+        return self.request_to_pay(PaymentRequest.make(amount, phone, reference, currency), reference_id)
