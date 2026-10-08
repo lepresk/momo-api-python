@@ -176,7 +176,8 @@ disbursement = AirtelApi.disbursement(
 )
 ```
 
-The key is accepted as a PEM, a base64-encoded PEM, or the bare base64 body.
+The key is accepted as a PEM, a base64-encoded PEM, the bare base64 body as
+Airtel's portal shows it, or that body base64-encoded again.
 
 ### Airtel phone numbers
 
@@ -188,7 +189,8 @@ is exported if you need the same normalisation elsewhere.
 
 Airtel reports business failures with HTTP 200 and `status.success: false`, so
 `request_to_pay()` and `transfer()` raise a `MomoException` in that case rather
-than returning an externalId for a refused request:
+than returning an externalId for a refused request. Status and balance lookups
+raise the same way:
 
 ```python
 from momo_api import MomoException
@@ -230,7 +232,9 @@ required`), and an environment outside the table below raises
 `ValueError: Unknown environment: '...'` rather than silently pointing at
 production.
 
-They also accept a `Config`, with the environment as the second argument:
+The environment is the dict's `environment` key when present, the second
+argument otherwise. They also accept a `Config`, with the environment as the
+second argument:
 
 ```python
 collection = MomoApi.collection(config, MomoApi.ENVIRONMENT_MTN_GHANA)
@@ -238,8 +242,14 @@ collection = MomoApi.collection(config, MomoApi.ENVIRONMENT_MTN_GHANA)
 
 ## Custom HTTP client
 
-By default each request goes through a short-lived `httpx.Client`. Pass your own
-to add timeouts, retries, proxies or logging, and to reuse connections:
+By default each request goes through a short-lived `httpx.Client` with a
+30-second timeout. A timeout raises `httpx.TimeoutException`, not a
+`MomoException`, and leaves the outcome unknown: MTN or Airtel may have
+accepted the payment, so query its status with your reference id before
+retrying (see [Retrying without paying twice](#retrying-without-paying-twice)).
+
+Pass your own client to change timeouts, add retries, proxies or logging, and
+reuse connections:
 
 ```python
 import httpx

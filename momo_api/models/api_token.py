@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Any, Dict
 
+from ..support.json import to_int
+
 
 @dataclass
 class ApiToken:
@@ -11,7 +13,7 @@ class ApiToken:
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "ApiToken":
         return cls(
-            access_token=data.get("access_token", ""),
-            token_type=data.get("token_type", ""),
-            expires_in=int(data.get("expires_in", 0)),
+            access_token=str(data.get("access_token") or ""),
+            token_type=str(data.get("token_type") or ""),
+            expires_in=to_int(data.get("expires_in")),
         )

@@ -4,14 +4,21 @@ from urllib.parse import quote
 
 import httpx
 
-from ..exceptions import ResourceNotFoundException, create_exception
+from ..exceptions import MomoException, ResourceNotFoundException, create_exception
 from ..models.account_balance import AccountBalance
 from ..support.http import read_json, send
+from ..support.json import to_int
 from ..support.phone import clean_phone_number
 from ..support.token_cache import TokenCache
 from .config import AirtelConfig
 from .response_status import AirtelResponseStatus
 from .transaction import AirtelTransaction
+
+
+def _node(data: Any, key: str) -> Dict[str, Any]:
+    """The object at ``data[key]``, or an empty dict when either is not an object."""
+    value = data.get(key) if isinstance(data, dict) else None
+    return value if isinstance(value, dict) else {}
 
 
 class AbstractAirtelApi:
@@ -61,10 +68,7 @@ class AbstractAirtelApi:
             # refusal maps to the same typed exception a 4xx/5xx would have
             # produced. Airtel's own code is HTTP-shaped ("500"), so it drives the
             # class; the result code becomes the reason's code.
-            try:
-                http_status = int(status.code or "")
-            except ValueError:
-                http_status = 0
+            http_status = to_int(status.code)
             raise create_exception(
                 http_status or response.status_code,
                 json.dumps({
@@ -91,8 +95,10 @@ class AbstractAirtelApi:
             headers={"Content-Type": "application/json", "Accept": "*/*"},
         )
         data = read_json(response)
-        token = str(data["access_token"])
-        self._token_cache.set(token, int(data.get("expires_in", 3600)))
+        token = str(data.get("access_token") or "") if isinstance(data, dict) else ""
+        if not token:
+            raise MomoException("Airtel returned no access token", response.status_code, body=response.text)
+        self._token_cache.set(token, to_int(data.get("expires_in"), 3600))
         return token
 
     def _get_transaction(self, path: str, external_id: str) -> AirtelTransaction:
@@ -103,7 +109,7 @@ class AbstractAirtelApi:
         token = self.get_access_token()
         response = self._send("GET", f"{self._base_url}{path}", headers=self._airtel_headers(token))
         data = self._read_airtel(response)
-        transaction = (data.get("data") or {}).get("transaction") if isinstance(data, dict) else None
+        transaction = _node(_node(data, "data"), "transaction")
         if not transaction:
             raise ResourceNotFoundException(
                 f"Transaction not found in Airtel system for externalId: {external_id}"
@@ -118,8 +124,9 @@ class AbstractAirtelApi:
         response = self._send(
             "GET", f"{self._base_url}/standard/v1/users/balance", headers=self._airtel_headers(token)
         )
-        data = self._read_airtel(response).get("data") or {}
+        data = _node(self._read_airtel(response), "data")
+        balance, currency = data.get("balance"), data.get("currency")
         return AccountBalance.parse({
-            "availableBalance": str(data.get("balance", "0")),
-            "currency": str(data.get("currency", "")),
+            "availableBalance": "0" if balance is None else str(balance),
+            "currency": "" if currency is None else str(currency),
         })

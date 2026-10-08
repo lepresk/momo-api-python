@@ -115,7 +115,7 @@ class AbstractApiProduct:
     def _get_transaction(self, path: str) -> Transaction:
         token = self.get_access_token()
         response = self._send("GET", self._url(path), headers=self._auth_headers(token.access_token))
-        return Transaction.parse(read_json(response))
+        return Transaction.parse(read_json(response))  # parse() tolerates a non-dict body
 
     def get_access_token(self) -> ApiToken:
         """Create an access token for the other endpoints. Cached for its lifetime
@@ -143,7 +143,8 @@ class AbstractApiProduct:
         response = self._send(
             "GET", self._url("v1_0/account/balance"), headers=self._auth_headers(token.access_token)
         )
-        return AccountBalance.parse(read_json(response))
+        data = read_json(response)
+        return AccountBalance.parse(data if isinstance(data, dict) else {})
 
     def check_account_holder(self, phone: str) -> bool:
         """Whether an MSISDN is a registered, active account holder."""
@@ -153,4 +154,5 @@ class AbstractApiProduct:
             self._url(f"v1_0/accountholder/msisdn/{quote(phone, safe='')}/active"),
             headers=self._auth_headers(token.access_token),
         )
-        return bool(read_json(response).get("result", False))
+        data = read_json(response)
+        return isinstance(data, dict) and data.get("result") is True

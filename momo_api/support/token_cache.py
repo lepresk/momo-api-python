@@ -16,5 +16,9 @@ class TokenCache:
         return self._token
 
     def set(self, token: str, expires_in: int) -> None:
+        if not token:
+            # Never cache an empty token: the next call should authenticate again
+            self._token = None
+            return
         self._token = token
         self._expires_at = time.monotonic() + max(0, expires_in - 60)

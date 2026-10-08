@@ -91,7 +91,7 @@ class MomoApi:
                 cls._require(source, "api_key"),
                 source.get("callback_url", "") or "",
             )
-            target = source.get("environment") or cls.ENVIRONMENT_SANDBOX
+            target = source.get("environment", environment)
         cls.get_base_url(target)
         return config, target
 
@@ -106,8 +106,8 @@ class MomoApi:
 
         ``config`` is either a dict of flat credentials, with ``environment``,
         ``subscription_key``, ``api_user``, ``api_key`` and an optional
-        ``callback_url``, or a ``Config``, in which case the environment comes
-        from the ``environment`` argument.
+        ``callback_url``, or a ``Config``. The environment is the dict's
+        ``environment`` key when present, the ``environment`` argument otherwise.
         """
         cfg, target = cls._resolve(config, environment)
         return CollectionApi(cfg, cls.get_base_url(target), target, http_client)

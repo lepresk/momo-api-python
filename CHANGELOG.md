@@ -33,6 +33,19 @@ ships its Airtel support along with everything here.
 - **BREAKING**: a missing Airtel transaction raises `ResourceNotFoundException`
   on both `get_payment_status()` and `get_transfer_status()`. The disbursement
   side raised `RuntimeError`; the collection side returned a blank transaction
+- **BREAKING**: every Airtel call, status and balance lookups included, raises
+  a `MomoException` when Airtel's `status` envelope reports `success: false`
+- **BREAKING**: an Airtel transfer amount with decimals (`"100.50"`) is sent
+  truncated (`"100"`), as the Node and PHP clients do; it used to raise
+  `ValueError`
+- **BREAKING**: `check_account_holder()` returns `True` only for a JSON `true`
+  result, not for any truthy value such as the string `"false"`
+- The default HTTP client times out after 30 seconds instead of httpx's 5, which
+  is short for a payment write. A timeout still raises `httpx.TimeoutException`
+- A dict passed to `MomoApi.collection()` / `disbursement()` without an
+  `environment` key uses the `environment` argument instead of ignoring it
+- A token response with a missing or non-numeric `expires_in` no longer
+  crashes, and an empty token is never cached
 - Every MTN request sends `Accept: application/json`, token and sandbox
   endpoints included
 - `AirtelTransaction.parse()` treats an empty or non-string field as absent
@@ -82,7 +95,8 @@ ships its Airtel support along with everything here.
   proxies and connection reuse
 - `encrypt_airtel_pin(pin, public_key)`: RSA/PKCS#1 v1.5 encryption of the
   Airtel disbursement PIN, accepting a PEM, a base64-encoded PEM or the bare
-  base64 body. Needs the new `[airtel]` extra (`cryptography`)
+  base64 body as Airtel's portal shows it, or that body base64-encoded again.
+  Needs the new `[airtel]` extra (`cryptography`)
 - `AirtelResponseStatus`, the `status` envelope Airtel returns; `AirtelTransaction.reference_id`
   and `STATUS_IN_PROGRESS`; `clean_phone_number()` and `AIRTEL_COUNTRY_CODES`
 - `MomoApi.ENVIRONMENTS`, `MomoApi.get_base_url()`, `get_collection()` /

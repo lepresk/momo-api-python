@@ -2,6 +2,11 @@ from typing import Any, NoReturn, Optional
 
 import httpx
 
+#: Timeout of the default client. httpx's own default (5 s) is short for a
+#: payment write, and a timeout leaves the outcome unknown: query the status
+#: with your reference id before retrying.
+DEFAULT_TIMEOUT = 30.0
+
 from ..exceptions import create_exception
 
 
@@ -10,7 +15,7 @@ def send(client: Optional[httpx.Client], method: str, url: str, **kwargs: Any) -
     retries, proxies and connection pool apply; otherwise use a one-off client."""
     if client is not None:
         return client.request(method, url, **kwargs)
-    with httpx.Client() as one_off:
+    with httpx.Client(timeout=DEFAULT_TIMEOUT) as one_off:
         return one_off.request(method, url, **kwargs)
 
 
