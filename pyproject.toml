@@ -1,21 +1,43 @@
 [project]
 name = "mtn-momo-client"
-version = "1.0.0"
-description = "MTN Mobile Money API client for Python — collections, disbursements and remittances"
+version = "2.0.0"
+description = "MTN Mobile Money and Airtel Money API client for Python — collections, disbursements and remittances"
+readme = "README.md"
 authors = [{name = "lepresk", email = "lepresk@gmail.com"}]
 license = {text = "MIT"}
-requires-python = ">=3.8"
-dependencies = ["httpx"]
+requires-python = ">=3.10"
+dependencies = ["httpx>=0.23"]
+keywords = ["mtn", "momo", "mobile-money", "airtel", "airtel-money", "payments", "africa"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Office/Business :: Financial",
+    "Typing :: Typed",
+]
 
 [project.optional-dependencies]
-dev = ["pytest", "pytest-httpx"]
+# Only needed to encrypt the Airtel disbursement PIN with encrypt_airtel_pin()
+airtel = ["cryptography>=41"]
+dev = ["pytest", "pytest-httpx", "cryptography>=41", "mypy"]
 
 [project.urls]
-Homepage = "https://lepresk.com/blog"
+Homepage = "https://github.com/lepresk/momo-api-python"
 Repository = "https://github.com/lepresk/momo-api-python"
+Changelog = "https://github.com/lepresk/momo-api-python/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["momo_api"]
+
+[tool.hatch.build.targets.sdist]
+include = ["momo_api", "tests", "README.md", "CHANGELOG.md", "LICENSE"]
 
 [build-system]
 requires = ["hatchling"]
@@ -23,3 +45,8 @@ build-backend = "hatchling.build"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+filterwarnings = ["error"]
+
+[tool.mypy]
+strict = true
+packages = ["momo_api"]

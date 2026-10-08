@@ -2,34 +2,54 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
-      - master
+    branches: [main]
   pull_request:
-    branches:
-      - main
-      - master
+    branches: [main]
 
 jobs:
   test:
-    name: Test
+    name: Test (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ["3.8", "3.10", "3.12"]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
-        run: pip install httpx pytest pytest-httpx
+      - name: Install
+        run: pip install -e ".[dev]"
 
-      - name: Run tests
+      - name: Type-check
+        run: mypy
+
+      - name: Test
         run: pytest
+
+  package:
+    name: Built package
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build
+        run: pip install build && python -m build
+
+      # Import from the installed wheel, not the source tree, so a packaging
+      # mistake (missing module, missing py.typed) fails here and not for users
+      - name: Install the wheel and import it
+        run: |
+          python -m venv /tmp/consumer
+          /tmp/consumer/bin/pip install dist/*.whl
+          cd /tmp && /tmp/consumer/bin/python "$GITHUB_WORKSPACE/scripts/check_wheel.py" "$GITHUB_WORKSPACE/pyproject.toml"
