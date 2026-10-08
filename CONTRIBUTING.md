@@ -4,7 +4,7 @@ Contributions are welcome. This document covers the basics to get started.
 
 ## Prerequisites
 
-- Python 3.8 or later
+- Python 3.10 or later
 - pip
 
 ## Setup
@@ -12,13 +12,14 @@ Contributions are welcome. This document covers the basics to get started.
 ```bash
 git clone https://github.com/lepresk/momo-api-python.git
 cd momo-api-python
-pip install "mtn-momo-client[dev]"
+pip install -e ".[dev]"
 ```
 
 ## Running tests
 
 ```bash
 pytest
+mypy
 ```
 
 Tests use [pytest-httpx](https://github.com/Colin-b/pytest_httpx) to mock HTTP calls. No real API calls are made. If you add a new method, add a corresponding test in `tests/`.
