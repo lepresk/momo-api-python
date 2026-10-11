@@ -1,8 +1,12 @@
 from dataclasses import dataclass
+from typing import Any, Dict
+
+from .abstract_request import AbstractRequest
+from .currency import DEFAULT_CURRENCY
 
 
 @dataclass
-class RefundRequest:
+class RefundRequest(AbstractRequest):
     amount: str
     currency: str
     external_id: str
@@ -16,25 +20,11 @@ class RefundRequest:
         amount: str,
         reference_id_to_refund: str,
         external_id: str,
-        currency: str = "XAF",
+        currency: str = DEFAULT_CURRENCY,
         payer_message: str = "",
         payee_note: str = "",
     ) -> "RefundRequest":
-        return cls(
-            amount=amount,
-            currency=currency,
-            external_id=external_id,
-            reference_id_to_refund=reference_id_to_refund,
-            payer_message=payer_message,
-            payee_note=payee_note,
-        )
+        return cls(amount, currency, external_id, reference_id_to_refund, payer_message, payee_note)
 
-    def to_dict(self) -> dict:
-        return {
-            "amount": self.amount,
-            "currency": self.currency,
-            "externalId": self.external_id,
-            "referenceIdToRefund": self.reference_id_to_refund,
-            "payerMessage": self.payer_message,
-            "payeeNote": self.payee_note,
-        }
+    def _subject(self) -> Dict[str, Any]:
+        return {"referenceIdToRefund": self.reference_id_to_refund}

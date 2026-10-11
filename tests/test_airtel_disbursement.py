@@ -5,7 +5,7 @@ from momo_api.airtel.api import STAGING_URL
 from momo_api.airtel.config import AirtelConfig
 from momo_api.airtel.disbursement import AirtelDisbursementApi
 from momo_api.airtel.transaction import AirtelTransaction
-from momo_api.exceptions import MomoException
+from momo_api.exceptions import MomoException, ResourceNotFoundException
 
 BASE_URL = STAGING_URL
 
@@ -97,7 +97,7 @@ def test_get_transfer_status_raises_when_missing(api, token_json, httpx_mock: HT
         url=f"{BASE_URL}/standard/v1/disbursements/abc-123",
         json={"data": {}},
     )
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ResourceNotFoundException):
         api.get_transfer_status("abc-123")
 
 

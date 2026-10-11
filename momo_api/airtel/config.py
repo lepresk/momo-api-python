@@ -1,4 +1,6 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+
+from ..models.currency import DEFAULT_CURRENCY
 
 
 @dataclass
@@ -7,7 +9,7 @@ class AirtelConfig:
     client_secret: str
     encrypted_pin: str = ""
     country: str = "CG"
-    currency: str = "XAF"
+    currency: str = DEFAULT_CURRENCY
     callback_uri: str = ""
 
     @classmethod
@@ -17,7 +19,7 @@ class AirtelConfig:
         client_secret: str,
         callback_uri: str = "",
         country: str = "CG",
-        currency: str = "XAF",
+        currency: str = DEFAULT_CURRENCY,
     ) -> "AirtelConfig":
         return cls(
             client_id=client_id,
@@ -35,7 +37,7 @@ class AirtelConfig:
         encrypted_pin: str,
         callback_uri: str = "",
         country: str = "CG",
-        currency: str = "XAF",
+        currency: str = DEFAULT_CURRENCY,
     ) -> "AirtelConfig":
         return cls(
             client_id=client_id,

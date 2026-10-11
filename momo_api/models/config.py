@@ -1,5 +1,4 @@
-from dataclasses import dataclass, field
-from typing import Optional
+from dataclasses import dataclass, replace
 
 
 @dataclass
@@ -42,3 +41,7 @@ class Config:
             api_key=api_key,
             callback_uri=callback_uri,
         )
+
+    def with_callback_uri(self, callback_uri: str) -> "Config":
+        """Return a copy of this config with a different callback uri."""
+        return replace(self, callback_uri=callback_uri)
