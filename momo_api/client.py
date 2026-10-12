@@ -43,7 +43,7 @@ class MomoApi:
     )
 
     SANDBOX_URL = "https://sandbox.momodeveloper.mtn.com"
-    PRODUCTION_URL = "https://proxy.momoapi.mtn.com"
+    PRODUCTION_URL = "https://momoapi.momo.africa"
 
     def __init__(self, environment: str, http_client: Optional[httpx.Client] = None) -> None:
         self._environment = environment

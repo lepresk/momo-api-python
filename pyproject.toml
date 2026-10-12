@@ -1,6 +1,6 @@
 [project]
 name = "mtn-momo-client"
-version = "2.0.0"
+version = "2.0.1"
 description = "MTN Mobile Money and Airtel Money API client for Python — collections, disbursements and remittances"
 readme = "README.md"
 authors = [{name = "lepresk", email = "lepresk@gmail.com"}]
