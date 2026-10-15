@@ -14,7 +14,12 @@ class SandboxApi:
         self._http_client = http_client
 
     def _headers(self, content_type: bool = False) -> Dict[str, str]:
-        headers = {"Ocp-Apim-Subscription-Key": self._subscription_key, "Accept": "application/json"}
+        headers = {
+            "Ocp-Apim-Subscription-Key": self._subscription_key,
+            # Provisioning only exists in the sandbox
+            "X-Target-Environment": "sandbox",
+            "Accept": "application/json",
+        }
         if content_type:
             headers["Content-Type"] = "application/json"
         return headers

@@ -38,7 +38,7 @@ from .support.phone import AIRTEL_COUNTRY_CODES, clean_phone_number
 from .support.token_cache import TokenCache
 from .support.uuid import assert_uuid, generate_uuid
 
-__version__ = "2.0.1"
+__version__ = "2.0.2"
 
 __all__ = [
     "AIRTEL_COUNTRY_CODES",

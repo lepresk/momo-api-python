@@ -130,6 +130,7 @@ class AbstractApiProduct:
             headers={
                 "Authorization": self._basic_auth(),
                 "Ocp-Apim-Subscription-Key": self._config.subscription_key,
+                "X-Target-Environment": self._environment,
                 "Accept": "application/json",
             },
         )
